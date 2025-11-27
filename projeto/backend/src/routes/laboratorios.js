@@ -1,0 +1,144 @@
+const express = require('express');
+const {
+  criarLaboratorio,
+  listarLaboratorios,
+  atualizarLaboratorio,
+  removerLaboratorio
+} = require('../controllers/laboratorioController');
+
+const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Laboratorio:
+ *       type: object
+ *       required:
+ *         - nome
+ *         - capacidade
+ *       properties:
+ *         nome:
+ *           type: string
+ *           description: Nome/identificador do laboratório
+ *         capacidade:
+ *           type: number
+ *           description: Capacidade do laboratório
+ *         localizacao:
+ *           type: string
+ *           description: Localização do laboratório
+ *         status:
+ *           type: boolean
+ *           default: true
+ *           description: Status ativo/inativo
+ */
+
+/**
+ * @swagger
+ * /api/v1/laboratorios:
+ *   post:
+ *     summary: Cria um novo laboratório
+ *     tags: [Laboratórios]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Laboratorio'
+ *     responses:
+ *       201:
+ *         description: Laboratório criado com sucesso
+ *       400:
+ *         description: Dados inválidos
+ */
+router.post('/', criarLaboratorio);
+
+/**
+ * @swagger
+ * /api/v1/laboratorios:
+ *   get:
+ *     summary: Lista todos os laboratórios
+ *     tags: [Laboratórios]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por status ativo
+ *       - in: query
+ *         name: nome
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome (contém)
+ *       - in: query
+ *         name: capacidade
+ *         schema:
+ *           type: number
+ *         description: Filtrar por capacidade mínima
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número da página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Itens por página
+ *     responses:
+ *       200:
+ *         description: Lista de laboratórios
+ */
+router.get('/', listarLaboratorios);
+
+/**
+ * @swagger
+ * /api/v1/laboratorios/{id}:
+ *   put:
+ *     summary: Atualiza um laboratório
+ *     tags: [Laboratórios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do laboratório
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Laboratorio'
+ *     responses:
+ *       200:
+ *         description: Laboratório atualizado
+ *       404:
+ *         description: Laboratório não encontrado
+ */
+router.put('/:id', atualizarLaboratorio);
+
+/**
+ * @swagger
+ * /api/v1/laboratorios/{id}:
+ *   delete:
+ *     summary: Remove um laboratório
+ *     tags: [Laboratórios]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID do laboratório
+ *     responses:
+ *       204:
+ *         description: Laboratório removido
+ *       404:
+ *         description: Laboratório não encontrado
+ */
+router.delete('/:id', removerLaboratorio);
+
+module.exports = router;

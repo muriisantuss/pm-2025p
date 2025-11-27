@@ -1,0 +1,153 @@
+const express = require('express');
+const {
+  criarDisciplina,
+  listarDisciplinas,
+  atualizarDisciplina,
+  removerDisciplina
+} = require('../controllers/disciplinaController');
+
+const router = express.Router();
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Disciplina:
+ *       type: object
+ *       required:
+ *         - curso
+ *         - nome
+ *         - cargaHoraria
+ *       properties:
+ *         curso:
+ *           type: string
+ *           description: ID do curso
+ *         nome:
+ *           type: string
+ *           description: Nome da disciplina
+ *         cargaHoraria:
+ *           type: number
+ *           description: Carga horária da disciplina
+ *         professorResponsavel:
+ *           type: string
+ *           description: ID do professor responsável
+ *         status:
+ *           type: boolean
+ *           default: true
+ *           description: Status ativo/inativo
+ */
+
+/**
+ * @swagger
+ * /api/v1/disciplinas:
+ *   post:
+ *     summary: Cria uma nova disciplina
+ *     tags: [Disciplinas]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Disciplina'
+ *     responses:
+ *       201:
+ *         description: Disciplina criada com sucesso
+ *       400:
+ *         description: Dados inválidos
+ */
+router.post('/', criarDisciplina);
+
+/**
+ * @swagger
+ * /api/v1/disciplinas:
+ *   get:
+ *     summary: Lista todas as disciplinas
+ *     tags: [Disciplinas]
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: boolean
+ *         description: Filtrar por status ativo
+ *       - in: query
+ *         name: nome
+ *         schema:
+ *           type: string
+ *         description: Filtrar por nome (contém)
+ *       - in: query
+ *         name: curso
+ *         schema:
+ *           type: string
+ *         description: Filtrar por ID do curso
+ *       - in: query
+ *         name: professor
+ *         schema:
+ *           type: string
+ *         description: Filtrar por ID do professor
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Número da página
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Itens por página
+ *     responses:
+ *       200:
+ *         description: Lista de disciplinas
+ */
+router.get('/', listarDisciplinas);
+
+/**
+ * @swagger
+ * /api/v1/disciplinas/{id}:
+ *   put:
+ *     summary: Atualiza uma disciplina
+ *     tags: [Disciplinas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da disciplina
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/Disciplina'
+ *     responses:
+ *       200:
+ *         description: Disciplina atualizada
+ *       404:
+ *         description: Disciplina não encontrada
+ */
+router.put('/:id', atualizarDisciplina);
+
+/**
+ * @swagger
+ * /api/v1/disciplinas/{id}:
+ *   delete:
+ *     summary: Remove uma disciplina
+ *     tags: [Disciplinas]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ID da disciplina
+ *     responses:
+ *       204:
+ *         description: Disciplina removida
+ *       404:
+ *         description: Disciplina não encontrada
+ */
+router.delete('/:id', removerDisciplina);
+
+module.exports = router;

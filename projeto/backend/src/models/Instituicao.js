@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
  * Schema para o modelo de Instituições
  * @typedef {Object} Instituicao
  * @property {string} nome - Nome da instituição
+ * @property {string} sigla - Sigla da instituição
  * @property {string} cnpj - CNPJ da instituição
  * @property {string} [email] - Email da instituição
  * @property {string} [telefone] - Telefone da instituição
@@ -22,6 +23,13 @@ const instituicaoSchema = new mongoose.Schema({
     required: [true, 'Nome é obrigatório'],
     trim: true,
     maxlength: [100, 'Nome deve ter no máximo 100 caracteres']
+  },
+  sigla: {
+    type: String,
+    required: [true, 'Sigla é obrigatória'],
+    trim: true,
+    uppercase: true,
+    maxlength: [10, 'Sigla deve ter no máximo 10 caracteres']
   },
   cnpj: {
     type: String,
