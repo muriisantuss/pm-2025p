@@ -18,7 +18,14 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  Chip,
+  OutlinedInput,
   CircularProgress,
+  FormHelperText,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,10 +33,11 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { instituicoesService } from '../../services/api';
-import { validarEmail, validarCNPJ, formatarCNPJ, formatarTelefone, tratarErroAPI } from '../../utils/validation';
+import { cursosService, instituicoesService } from '../../services/api';
+import { tratarErroAPI } from '../../utils/validation';
 
-const Instituicoes = () => {
+const Cursos = () => {
+  const [cursos, setCursos] = useState([]);
   const [instituicoes, setInstituicoes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -38,27 +46,35 @@ const Instituicoes = () => {
   const [filtro, setFiltro] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [errors, setErrors] = useState({});
-
+  
   const [formData, setFormData] = useState({
     nome: '',
-    cnpj: '',
-    sigla: '',
-    email: '',
-    telefone: '',
-    endereco: '',
+    turnos: [],
+    instituicao: '',
     ativo: true,
   });
 
-  const carregarInstituicoes = async () => {
+  const turnosDisponiveis = ['Manhã', 'Tarde', 'Noite'];
+
+  const carregarCursos = async () => {
     setLoading(true);
+    try {
+      const response = await cursosService.listar();
+      setCursos(response.data);
+    } catch (error) {
+      console.error('Erro ao carregar:', error);
+      mostrarSnackbar('Erro ao carregar cursos', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const carregarInstituicoes = async () => {
     try {
       const response = await instituicoesService.listar();
       setInstituicoes(response.data);
     } catch (error) {
-      console.error('Erro ao carregar:', error);
-      mostrarSnackbar('Erro ao carregar instituições', 'error');
-    } finally {
-      setLoading(false);
+      console.error('Erro ao carregar instituições:', error);
     }
   };
 
@@ -66,28 +82,22 @@ const Instituicoes = () => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const abrirDialog = (instituicao = null) => {
+  const abrirDialog = (curso = null) => {
     setErrors({});
-    if (instituicao) {
-      setEditingId(instituicao._id);
+    if (curso) {
+      setEditingId(curso._id);
       setFormData({
-        nome: instituicao.nome || '',
-        cnpj: instituicao.cnpj || '',
-        sigla: instituicao.sigla || '',
-        email: instituicao.email || '',
-        telefone: instituicao.telefone || '',
-        endereco: instituicao.endereco || '',
-        ativo: instituicao.ativo !== undefined ? instituicao.ativo : true,
+        nome: curso.nome || '',
+        turnos: curso.turnos || [],
+        instituicao: curso.instituicao?._id || '',
+        ativo: curso.ativo !== undefined ? curso.ativo : true,
       });
     } else {
       setEditingId(null);
       setFormData({
         nome: '',
-        cnpj: '',
-        sigla: '',
-        email: '',
-        telefone: '',
-        endereco: '',
+        turnos: [],
+        instituicao: '',
         ativo: true,
       });
     }
@@ -106,25 +116,15 @@ const Instituicoes = () => {
       novosErros.nome = 'Nome é obrigatório';
     }
     
-    if (!formData.sigla.trim()) {
-      novosErros.sigla = 'Sigla é obrigatória';
-    }
-    
-    if (!formData.cnpj.trim()) {
-      novosErros.cnpj = 'CNPJ é obrigatório';
-    } else if (!validarCNPJ(formData.cnpj)) {
-      novosErros.cnpj = 'CNPJ inválido';
-    }
-    
-    if (formData.email && !validarEmail(formData.email)) {
-      novosErros.email = 'Email inválido';
+    if (!formData.instituicao) {
+      novosErros.instituicao = 'Instituição é obrigatória';
     }
     
     setErrors(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const salvarInstituicao = async () => {
+  const salvarCurso = async () => {
     if (!validarFormulario()) {
       return;
     }
@@ -132,14 +132,14 @@ const Instituicoes = () => {
     setSaving(true);
     try {
       if (editingId) {
-        await instituicoesService.atualizar(editingId, formData);
-        mostrarSnackbar('Instituição atualizada com sucesso');
+        await cursosService.atualizar(editingId, formData);
+        mostrarSnackbar('Curso atualizado com sucesso');
       } else {
-        await instituicoesService.criar(formData);
-        mostrarSnackbar('Instituição criada com sucesso');
+        await cursosService.criar(formData);
+        mostrarSnackbar('Curso criado com sucesso');
       }
       fecharDialog();
-      carregarInstituicoes();
+      carregarCursos();
     } catch (error) {
       const message = tratarErroAPI(error);
       mostrarSnackbar(message, 'error');
@@ -148,26 +148,27 @@ const Instituicoes = () => {
     }
   };
 
-  const removerInstituicao = async (id) => {
-    if (window.confirm('Tem certeza que deseja remover esta instituição?')) {
+  const removerCurso = async (id) => {
+    if (window.confirm('Tem certeza que deseja remover este curso?')) {
       try {
-        await instituicoesService.remover(id);
-        mostrarSnackbar('Instituição removida com sucesso');
-        carregarInstituicoes();
+        await cursosService.remover(id);
+        mostrarSnackbar('Curso removido com sucesso');
+        carregarCursos();
       } catch (error) {
-        const message = error.response?.data?.message || 'Erro ao remover instituição';
+        const message = error.response?.data?.message || 'Erro ao remover curso';
         mostrarSnackbar(message, 'error');
       }
     }
   };
 
-  const instituicoesFiltradas = instituicoes.filter((instituicao) =>
-    Object.values(instituicao).some((value) =>
+  const cursosFiltrados = cursos.filter((curso) =>
+    Object.values(curso).some((value) =>
       String(value).toLowerCase().includes(filtro.toLowerCase())
     )
   );
 
   useEffect(() => {
+    carregarCursos();
     carregarInstituicoes();
   }, []);
 
@@ -180,12 +181,12 @@ const Instituicoes = () => {
             startIcon={<AddIcon />}
             onClick={() => abrirDialog()}
           >
-            Nova Instituição
+            Novo Curso
           </Button>
-
+          
           <TextField
             size="small"
-            placeholder="Filtrar instituições..."
+            placeholder="Filtrar cursos..."
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             InputProps={{
@@ -201,34 +202,40 @@ const Instituicoes = () => {
           <TableHead>
             <TableRow>
               <TableCell>Nome</TableCell>
-              <TableCell>CNPJ</TableCell>
-              <TableCell>Email</TableCell>
+              <TableCell>Instituição</TableCell>
+              <TableCell>Turnos</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {instituicoesFiltradas.map((instituicao) => (
-              <TableRow key={instituicao._id}>
-                <TableCell>{instituicao.nome}</TableCell>
-                <TableCell>{instituicao.cnpj}</TableCell>
-                <TableCell>{instituicao.email}</TableCell>
+            {cursosFiltrados.map((curso) => (
+              <TableRow key={curso._id}>
+                <TableCell>{curso.nome}</TableCell>
+                <TableCell>{curso.instituicao?.nome || 'N/A'}</TableCell>
                 <TableCell>
-                  <Typography color={instituicao.ativo ? 'success.main' : 'error.main'}>
-                    {instituicao.ativo ? 'Ativo' : 'Inativo'}
+                  <Box sx={{ display: 'flex', gap: 0.5, flexWrap: 'wrap' }}>
+                    {curso.turnos?.map((turno) => (
+                      <Chip key={turno} label={turno} size="small" />
+                    ))}
+                  </Box>
+                </TableCell>
+                <TableCell>
+                  <Typography color={curso.ativo ? 'success.main' : 'error.main'}>
+                    {curso.ativo ? 'Ativo' : 'Inativo'}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <IconButton
                     size="small"
-                    onClick={() => abrirDialog(instituicao)}
+                    onClick={() => abrirDialog(curso)}
                     color="primary"
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => removerInstituicao(instituicao._id)}
+                    onClick={() => removerCurso(curso._id)}
                     color="error"
                   >
                     <DeleteIcon />
@@ -242,7 +249,7 @@ const Instituicoes = () => {
 
       <Dialog open={dialogOpen} onClose={fecharDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingId ? 'Editar Instituição' : 'Nova Instituição'}
+          {editingId ? 'Editar Curso' : 'Novo Curso'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -258,69 +265,66 @@ const Instituicoes = () => {
               fullWidth
               required
             />
-            <TextField
-              label="Sigla *"
-              value={formData.sigla}
-              onChange={(e) => {
-                setFormData({ ...formData, sigla: e.target.value.toUpperCase() });
-                if (errors.sigla) setErrors({ ...errors, sigla: '' });
-              }}
-              error={!!errors.sigla}
-              helperText={errors.sigla}
-              fullWidth
-              required
-              slotProps={{
-                htmlInput: { maxLength: 10 } 
-              }}
-            />
-            <TextField
-              label="CNPJ *"
-              value={formData.cnpj}
-              onChange={(e) => {
-                const valorFormatado = formatarCNPJ(e.target.value);
-                setFormData({ ...formData, cnpj: valorFormatado });
-                if (errors.cnpj) setErrors({ ...errors, cnpj: '' });
-              }}
-              error={!!errors.cnpj}
-              helperText={errors.cnpj}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Email"
-              type="email"
-              value={formData.email}
-              onChange={(e) => {
-                setFormData({ ...formData, email: e.target.value });
-                if (errors.email) setErrors({ ...errors, email: '' });
-              }}
-              error={!!errors.email}
-              helperText={errors.email}
-              fullWidth
-            />
-            <TextField
-              label="Telefone"
-              value={formData.telefone}
-              onChange={(e) => {
-                const valorFormatado = formatarTelefone(e.target.value);
-                setFormData({ ...formData, telefone: valorFormatado });
-              }}
-              fullWidth
-            />
-            <TextField
-              label="Endereço"
-              value={formData.endereco}
-              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-              fullWidth
-              multiline
-              rows={2}
-            />
+            
+            <FormControl fullWidth required error={!!errors.instituicao}>
+              <InputLabel>Instituição *</InputLabel>
+              <Select
+                value={formData.instituicao}
+                onChange={(e) => {
+                  setFormData({ ...formData, instituicao: e.target.value });
+                  if (errors.instituicao) setErrors({ ...errors, instituicao: '' });
+                }}
+                label="Instituição *"
+              >
+                {instituicoes.map((instituicao) => (
+                  <MenuItem key={instituicao._id} value={instituicao._id}>
+                    {instituicao.nome}
+                  </MenuItem>
+                ))}
+              </Select>
+              {errors.instituicao && <FormHelperText>{errors.instituicao}</FormHelperText>}
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Turnos</InputLabel>
+              <Select
+                multiple
+                value={formData.turnos}
+                onChange={(e) => setFormData({ ...formData, turnos: e.target.value })}
+                input={<OutlinedInput label="Turnos" />}
+                renderValue={(selected) => (
+                  <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                    {selected.map((value) => (
+                      <Chip key={value} label={value} size="small" />
+                    ))}
+                  </Box>
+                )}
+              >
+                {turnosDisponiveis.map((turno) => (
+                  <MenuItem key={turno} value={turno}>
+                    {turno}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={formData.ativo}
+                onChange={(e) => setFormData({ ...formData, ativo: e.target.value })}
+                label="Status"
+              >
+                <MenuItem value={true}>Ativo</MenuItem>
+                <MenuItem value={false}>Inativo</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={fecharDialog} disabled={saving}>Cancelar</Button>
           <Button 
-            onClick={salvarInstituicao} 
+            onClick={salvarCurso} 
             variant="contained"
             disabled={saving}
             startIcon={saving ? <CircularProgress size={20} /> : null}
@@ -347,4 +351,4 @@ const Instituicoes = () => {
   );
 };
 
-export default Instituicoes;
+export default Cursos;

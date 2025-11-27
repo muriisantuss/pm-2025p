@@ -48,4 +48,54 @@ export const instituicoesService = {
   remover: (id) => api.delete(`/instituicoes/${id}`),
 };
 
+/**
+ * Serviços para operações com cursos
+ */
+export const cursosService = {
+  listar: (params = {}) => api.get('/cursos', { params }),
+  criar: (data) => api.post('/cursos', data),
+  atualizar: (id, data) => api.put(`/cursos/${id}`, data),
+  remover: (id) => api.delete(`/cursos/${id}`),
+};
+
+/**
+ * Serviços para operações com professores
+ */
+export const professoresService = {
+  listar: (params = {}) => api.get('/professores', { params }),
+  criar: (data) => api.post('/professores', data),
+  atualizar: (id, data) => api.put(`/professores/${id}`, data),
+  remover: (id) => api.delete(`/professores/${id}`),
+};
+
+/**
+ * Serviços para operações com laboratórios
+ */
+export const laboratoriosService = {
+  listar: (params = {}) => api.get('/laboratorios', { params }),
+  criar: (data) => api.post('/laboratorios', data),
+  atualizar: (id, data) => api.put(`/laboratorios/${id}`, data),
+  remover: (id) => api.delete(`/laboratorios/${id}`),
+};
+
+/**
+ * Serviços para operações com disciplinas
+ */
+export const disciplinasService = {
+  listar: (params = {}) => api.get('/disciplinas', { params }),
+  criar: (data) => api.post('/disciplinas', data),
+  atualizar: (id, data) => api.put(`/disciplinas/${id}`, data),
+  remover: (id) => api.delete(`/disciplinas/${id}`),
+};
+
+/**
+ * Serviços para operações com blocos de horário
+ */
+export const blocosService = {
+  listar: (params = {}) => api.get('/blocos', { params }),
+  criar: (data) => api.post('/blocos', data),
+  atualizar: (id, data) => api.put(`/blocos/${id}`, data),
+  remover: (id) => api.delete(`/blocos/${id}`),
+};
+
 export default api;

@@ -16,8 +16,18 @@ import {
 import {
   Business as BusinessIcon,
   Close as CloseIcon,
+  School as SchoolIcon,
+  Person as PersonIcon,
+  Computer as ComputerIcon,
+  MenuBook as MenuBookIcon,
+  Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import Instituicoes from '../Instituicoes/Instituicoes';
+import Cursos from '../Cursos/Cursos';
+import Professores from '../Professores/Professores';
+import Laboratorios from '../Laboratorios/Laboratorios';
+import Disciplinas from '../Disciplinas/Disciplinas';
+import Blocos from '../Blocos/Blocos';
 
 const Menu = ({ open, onClose }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -41,6 +51,26 @@ const Menu = ({ open, onClose }) => {
     handleOpenModal('Gerenciar Instituições', <Instituicoes />);
   };
 
+  const handleCursosClick = () => {
+    handleOpenModal('Gerenciar Cursos', <Cursos />);
+  };
+
+  const handleProfessoresClick = () => {
+    handleOpenModal('Gerenciar Professores', <Professores />);
+  };
+
+  const handleLaboratoriosClick = () => {
+    handleOpenModal('Gerenciar Laboratórios', <Laboratorios />);
+  };
+
+  const handleDisciplinasClick = () => {
+    handleOpenModal('Gerenciar Disciplinas', <Disciplinas />);
+  };
+
+  const handleBlocosClick = () => {
+    handleOpenModal('Gerenciar Blocos de Horário', <Blocos />);
+  };
+
   return (
     <>
       <Drawer anchor="left" open={open} onClose={onClose}>
@@ -58,6 +88,46 @@ const Menu = ({ open, onClose }) => {
                   <BusinessIcon />
                 </ListItemIcon>
                 <ListItemText primary="Instituições" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleCursosClick}>
+                <ListItemIcon>
+                  <SchoolIcon />
+                </ListItemIcon>
+                <ListItemText primary="Cursos" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleProfessoresClick}>
+                <ListItemIcon>
+                  <PersonIcon />
+                </ListItemIcon>
+                <ListItemText primary="Professores" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleLaboratoriosClick}>
+                <ListItemIcon>
+                  <ComputerIcon />
+                </ListItemIcon>
+                <ListItemText primary="Laboratórios" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleDisciplinasClick}>
+                <ListItemIcon>
+                  <MenuBookIcon />
+                </ListItemIcon>
+                <ListItemText primary="Disciplinas" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleBlocosClick}>
+                <ListItemIcon>
+                  <ScheduleIcon />
+                </ListItemIcon>
+                <ListItemText primary="Blocos de Horário" />
               </ListItemButton>
             </ListItem>
           </List>

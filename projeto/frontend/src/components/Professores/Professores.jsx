@@ -18,7 +18,12 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
   CircularProgress,
+  FormHelperText,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -26,11 +31,11 @@ import {
   Delete as DeleteIcon,
   Search as SearchIcon,
 } from '@mui/icons-material';
-import { instituicoesService } from '../../services/api';
-import { validarEmail, validarCNPJ, formatarCNPJ, formatarTelefone, tratarErroAPI } from '../../utils/validation';
+import { professoresService } from '../../services/api';
+import { validarEmail, formatarTelefone, tratarErroAPI } from '../../utils/validation';
 
-const Instituicoes = () => {
-  const [instituicoes, setInstituicoes] = useState([]);
+const Professores = () => {
+  const [professores, setProfessores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -38,25 +43,22 @@ const Instituicoes = () => {
   const [filtro, setFiltro] = useState('');
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
   const [errors, setErrors] = useState({});
-
+  
   const [formData, setFormData] = useState({
     nome: '',
-    cnpj: '',
-    sigla: '',
     email: '',
     telefone: '',
-    endereco: '',
     ativo: true,
   });
 
-  const carregarInstituicoes = async () => {
+  const carregarProfessores = async () => {
     setLoading(true);
     try {
-      const response = await instituicoesService.listar();
-      setInstituicoes(response.data);
+      const response = await professoresService.listar();
+      setProfessores(response.data);
     } catch (error) {
       console.error('Erro ao carregar:', error);
-      mostrarSnackbar('Erro ao carregar instituições', 'error');
+      mostrarSnackbar('Erro ao carregar professores', 'error');
     } finally {
       setLoading(false);
     }
@@ -66,28 +68,22 @@ const Instituicoes = () => {
     setSnackbar({ open: true, message, severity });
   };
 
-  const abrirDialog = (instituicao = null) => {
+  const abrirDialog = (professor = null) => {
     setErrors({});
-    if (instituicao) {
-      setEditingId(instituicao._id);
+    if (professor) {
+      setEditingId(professor._id);
       setFormData({
-        nome: instituicao.nome || '',
-        cnpj: instituicao.cnpj || '',
-        sigla: instituicao.sigla || '',
-        email: instituicao.email || '',
-        telefone: instituicao.telefone || '',
-        endereco: instituicao.endereco || '',
-        ativo: instituicao.ativo !== undefined ? instituicao.ativo : true,
+        nome: professor.nome || '',
+        email: professor.email || '',
+        telefone: professor.telefone || '',
+        ativo: professor.ativo !== undefined ? professor.ativo : true,
       });
     } else {
       setEditingId(null);
       setFormData({
         nome: '',
-        cnpj: '',
-        sigla: '',
         email: '',
         telefone: '',
-        endereco: '',
         ativo: true,
       });
     }
@@ -106,17 +102,9 @@ const Instituicoes = () => {
       novosErros.nome = 'Nome é obrigatório';
     }
     
-    if (!formData.sigla.trim()) {
-      novosErros.sigla = 'Sigla é obrigatória';
-    }
-    
-    if (!formData.cnpj.trim()) {
-      novosErros.cnpj = 'CNPJ é obrigatório';
-    } else if (!validarCNPJ(formData.cnpj)) {
-      novosErros.cnpj = 'CNPJ inválido';
-    }
-    
-    if (formData.email && !validarEmail(formData.email)) {
+    if (!formData.email.trim()) {
+      novosErros.email = 'Email é obrigatório';
+    } else if (!validarEmail(formData.email)) {
       novosErros.email = 'Email inválido';
     }
     
@@ -124,7 +112,7 @@ const Instituicoes = () => {
     return Object.keys(novosErros).length === 0;
   };
 
-  const salvarInstituicao = async () => {
+  const salvarProfessor = async () => {
     if (!validarFormulario()) {
       return;
     }
@@ -132,14 +120,14 @@ const Instituicoes = () => {
     setSaving(true);
     try {
       if (editingId) {
-        await instituicoesService.atualizar(editingId, formData);
-        mostrarSnackbar('Instituição atualizada com sucesso');
+        await professoresService.atualizar(editingId, formData);
+        mostrarSnackbar('Professor atualizado com sucesso');
       } else {
-        await instituicoesService.criar(formData);
-        mostrarSnackbar('Instituição criada com sucesso');
+        await professoresService.criar(formData);
+        mostrarSnackbar('Professor criado com sucesso');
       }
       fecharDialog();
-      carregarInstituicoes();
+      carregarProfessores();
     } catch (error) {
       const message = tratarErroAPI(error);
       mostrarSnackbar(message, 'error');
@@ -148,27 +136,27 @@ const Instituicoes = () => {
     }
   };
 
-  const removerInstituicao = async (id) => {
-    if (window.confirm('Tem certeza que deseja remover esta instituição?')) {
+  const removerProfessor = async (id) => {
+    if (window.confirm('Tem certeza que deseja remover este professor?')) {
       try {
-        await instituicoesService.remover(id);
-        mostrarSnackbar('Instituição removida com sucesso');
-        carregarInstituicoes();
+        await professoresService.remover(id);
+        mostrarSnackbar('Professor removido com sucesso');
+        carregarProfessores();
       } catch (error) {
-        const message = error.response?.data?.message || 'Erro ao remover instituição';
+        const message = error.response?.data?.message || 'Erro ao remover professor';
         mostrarSnackbar(message, 'error');
       }
     }
   };
 
-  const instituicoesFiltradas = instituicoes.filter((instituicao) =>
-    Object.values(instituicao).some((value) =>
+  const professoresFiltrados = professores.filter((professor) =>
+    Object.values(professor).some((value) =>
       String(value).toLowerCase().includes(filtro.toLowerCase())
     )
   );
 
   useEffect(() => {
-    carregarInstituicoes();
+    carregarProfessores();
   }, []);
 
   return (
@@ -180,12 +168,12 @@ const Instituicoes = () => {
             startIcon={<AddIcon />}
             onClick={() => abrirDialog()}
           >
-            Nova Instituição
+            Novo Professor
           </Button>
-
+          
           <TextField
             size="small"
-            placeholder="Filtrar instituições..."
+            placeholder="Filtrar professores..."
             value={filtro}
             onChange={(e) => setFiltro(e.target.value)}
             InputProps={{
@@ -201,34 +189,34 @@ const Instituicoes = () => {
           <TableHead>
             <TableRow>
               <TableCell>Nome</TableCell>
-              <TableCell>CNPJ</TableCell>
               <TableCell>Email</TableCell>
+              <TableCell>Telefone</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Ações</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {instituicoesFiltradas.map((instituicao) => (
-              <TableRow key={instituicao._id}>
-                <TableCell>{instituicao.nome}</TableCell>
-                <TableCell>{instituicao.cnpj}</TableCell>
-                <TableCell>{instituicao.email}</TableCell>
+            {professoresFiltrados.map((professor) => (
+              <TableRow key={professor._id}>
+                <TableCell>{professor.nome}</TableCell>
+                <TableCell>{professor.email}</TableCell>
+                <TableCell>{professor.telefone}</TableCell>
                 <TableCell>
-                  <Typography color={instituicao.ativo ? 'success.main' : 'error.main'}>
-                    {instituicao.ativo ? 'Ativo' : 'Inativo'}
+                  <Typography color={professor.ativo ? 'success.main' : 'error.main'}>
+                    {professor.ativo ? 'Ativo' : 'Inativo'}
                   </Typography>
                 </TableCell>
                 <TableCell>
                   <IconButton
                     size="small"
-                    onClick={() => abrirDialog(instituicao)}
+                    onClick={() => abrirDialog(professor)}
                     color="primary"
                   >
                     <EditIcon />
                   </IconButton>
                   <IconButton
                     size="small"
-                    onClick={() => removerInstituicao(instituicao._id)}
+                    onClick={() => removerProfessor(professor._id)}
                     color="error"
                   >
                     <DeleteIcon />
@@ -242,7 +230,7 @@ const Instituicoes = () => {
 
       <Dialog open={dialogOpen} onClose={fecharDialog} maxWidth="md" fullWidth>
         <DialogTitle>
-          {editingId ? 'Editar Instituição' : 'Nova Instituição'}
+          {editingId ? 'Editar Professor' : 'Novo Professor'}
         </DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, pt: 1 }}>
@@ -259,35 +247,7 @@ const Instituicoes = () => {
               required
             />
             <TextField
-              label="Sigla *"
-              value={formData.sigla}
-              onChange={(e) => {
-                setFormData({ ...formData, sigla: e.target.value.toUpperCase() });
-                if (errors.sigla) setErrors({ ...errors, sigla: '' });
-              }}
-              error={!!errors.sigla}
-              helperText={errors.sigla}
-              fullWidth
-              required
-              slotProps={{
-                htmlInput: { maxLength: 10 } 
-              }}
-            />
-            <TextField
-              label="CNPJ *"
-              value={formData.cnpj}
-              onChange={(e) => {
-                const valorFormatado = formatarCNPJ(e.target.value);
-                setFormData({ ...formData, cnpj: valorFormatado });
-                if (errors.cnpj) setErrors({ ...errors, cnpj: '' });
-              }}
-              error={!!errors.cnpj}
-              helperText={errors.cnpj}
-              fullWidth
-              required
-            />
-            <TextField
-              label="Email"
+              label="Email *"
               type="email"
               value={formData.email}
               onChange={(e) => {
@@ -297,6 +257,7 @@ const Instituicoes = () => {
               error={!!errors.email}
               helperText={errors.email}
               fullWidth
+              required
             />
             <TextField
               label="Telefone"
@@ -307,20 +268,23 @@ const Instituicoes = () => {
               }}
               fullWidth
             />
-            <TextField
-              label="Endereço"
-              value={formData.endereco}
-              onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
-              fullWidth
-              multiline
-              rows={2}
-            />
+            <FormControl fullWidth>
+              <InputLabel>Status</InputLabel>
+              <Select
+                value={formData.ativo}
+                onChange={(e) => setFormData({ ...formData, ativo: e.target.value })}
+                label="Status"
+              >
+                <MenuItem value={true}>Ativo</MenuItem>
+                <MenuItem value={false}>Inativo</MenuItem>
+              </Select>
+            </FormControl>
           </Box>
         </DialogContent>
         <DialogActions>
           <Button onClick={fecharDialog} disabled={saving}>Cancelar</Button>
           <Button 
-            onClick={salvarInstituicao} 
+            onClick={salvarProfessor} 
             variant="contained"
             disabled={saving}
             startIcon={saving ? <CircularProgress size={20} /> : null}
@@ -347,4 +311,4 @@ const Instituicoes = () => {
   );
 };
 
-export default Instituicoes;
+export default Professores;
