@@ -1,4 +1,5 @@
 const Bloco = require('../models/Bloco');
+const { sanitizarDados } = require('./genericController');
 
 /**
  * Controller para operações CRUD de blocos de horário
@@ -13,7 +14,8 @@ const Bloco = require('../models/Bloco');
  */
 const criarBloco = async (req, res, next) => {
   try {
-    const bloco = await Bloco.create(req.body);
+    const dadosSanitizados = sanitizarDados(req.body);
+    const bloco = await Bloco.create(dadosSanitizados);
     res.status(201).json(bloco);
   } catch (error) {
     next(error);
@@ -59,9 +61,10 @@ const listarBlocos = async (req, res, next) => {
  */
 const atualizarBloco = async (req, res, next) => {
   try {
+    const dadosSanitizados = sanitizarDados(req.body);
     const bloco = await Bloco.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      dadosSanitizados,
       { new: true, runValidators: true }
     );
 

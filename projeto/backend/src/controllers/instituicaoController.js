@@ -1,4 +1,5 @@
 const Instituicao = require('../models/Instituicao');
+const { sanitizarDados, sanitizarFiltros } = require('./genericController');
 
 /**
  * Controller para operações CRUD de instituições
@@ -13,7 +14,8 @@ const Instituicao = require('../models/Instituicao');
  */
 const criarInstituicao = async (req, res, next) => {
   try {
-    const instituicao = await Instituicao.create(req.body);
+    const dadosSanitizados = sanitizarDados(req.body);
+    const instituicao = await Instituicao.create(dadosSanitizados);
     res.status(201).json(instituicao);
   } catch (error) {
     next(error);
@@ -28,16 +30,8 @@ const criarInstituicao = async (req, res, next) => {
  */
 const listarInstituicoes = async (req, res, next) => {
   try {
-    const { ativo, nome, page = 1, limit = 20 } = req.query;
-    const filter = {};
-
-    if (ativo !== undefined) {
-      filter.ativo = ativo === 'true';
-    }
-
-    if (nome) {
-      filter.nome = { $regex: nome, $options: 'i' };
-    }
+    const { page = 1, limit = 20 } = req.query;
+    const filter = sanitizarFiltros(req.query);
 
     const skip = (page - 1) * limit;
     const instituicoes = await Instituicao.find(filter)
@@ -59,9 +53,10 @@ const listarInstituicoes = async (req, res, next) => {
  */
 const atualizarInstituicao = async (req, res, next) => {
   try {
+    const dadosSanitizados = sanitizarDados(req.body);
     const instituicao = await Instituicao.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      dadosSanitizados,
       { new: true, runValidators: true }
     );
 

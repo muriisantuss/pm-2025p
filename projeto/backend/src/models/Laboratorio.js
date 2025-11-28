@@ -31,7 +31,7 @@ const laboratorioSchema = new mongoose.Schema({
     trim: true,
     maxlength: [100, 'Localização deve ter no máximo 100 caracteres']
   },
-  status: {
+  ativo: {
     type: Boolean,
     default: true
   }

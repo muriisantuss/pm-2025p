@@ -1,4 +1,5 @@
 const Curso = require('../models/Curso');
+const { sanitizarDados, sanitizarFiltros } = require('./genericController');
 
 /**
  * Controller para operações CRUD de cursos
@@ -13,7 +14,8 @@ const Curso = require('../models/Curso');
  */
 const criarCurso = async (req, res, next) => {
   try {
-    const curso = await Curso.create(req.body);
+    const dadosSanitizados = sanitizarDados(req.body);
+    const curso = await Curso.create(dadosSanitizados);
     const cursoPopulado = await Curso.findById(curso._id).populate('instituicao', 'nome sigla');
     res.status(201).json(cursoPopulado);
   } catch (error) {
@@ -29,16 +31,8 @@ const criarCurso = async (req, res, next) => {
  */
 const listarCursos = async (req, res, next) => {
   try {
-    const { status, nome, instituicao, page = 1, limit = 20 } = req.query;
-    const filter = {};
-
-    if (status) {
-      filter.status = status;
-    }
-
-    if (nome) {
-      filter.nome = { $regex: nome, $options: 'i' };
-    }
+    const { instituicao, page = 1, limit = 20 } = req.query;
+    const filter = sanitizarFiltros(req.query);
 
     if (instituicao) {
       filter.instituicao = instituicao;
@@ -65,9 +59,10 @@ const listarCursos = async (req, res, next) => {
  */
 const atualizarCurso = async (req, res, next) => {
   try {
+    const dadosSanitizados = sanitizarDados(req.body);
     const curso = await Curso.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      dadosSanitizados,
       { new: true, runValidators: true }
     ).populate('instituicao', 'nome sigla');
 

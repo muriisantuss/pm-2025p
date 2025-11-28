@@ -1,4 +1,5 @@
 const Professor = require('../models/Professor');
+const { sanitizarDados, sanitizarFiltros } = require('./genericController');
 
 /**
  * Controller para operações CRUD de professores
@@ -13,7 +14,8 @@ const Professor = require('../models/Professor');
  */
 const criarProfessor = async (req, res, next) => {
   try {
-    const professor = await Professor.create(req.body);
+    const dadosSanitizados = sanitizarDados(req.body);
+    const professor = await Professor.create(dadosSanitizados);
     res.status(201).json(professor);
   } catch (error) {
     next(error);
@@ -28,20 +30,8 @@ const criarProfessor = async (req, res, next) => {
  */
 const listarProfessores = async (req, res, next) => {
   try {
-    const { status, nome, email, page = 1, limit = 20 } = req.query;
-    const filter = {};
-
-    if (status !== undefined) {
-      filter.status = status === 'true';
-    }
-
-    if (nome) {
-      filter.nome = { $regex: nome, $options: 'i' };
-    }
-
-    if (email) {
-      filter.email = { $regex: email, $options: 'i' };
-    }
+    const { page = 1, limit = 20 } = req.query;
+    const filter = sanitizarFiltros(req.query);
 
     const skip = (page - 1) * limit;
     const professores = await Professor.find(filter)
@@ -63,9 +53,10 @@ const listarProfessores = async (req, res, next) => {
  */
 const atualizarProfessor = async (req, res, next) => {
   try {
+    const dadosSanitizados = sanitizarDados(req.body);
     const professor = await Professor.findByIdAndUpdate(
       req.params.id,
-      req.body,
+      dadosSanitizados,
       { new: true, runValidators: true }
     );
 

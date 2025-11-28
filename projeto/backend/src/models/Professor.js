@@ -33,7 +33,7 @@ const professorSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
-  status: {
+  ativo: {
     type: Boolean,
     default: true
   }

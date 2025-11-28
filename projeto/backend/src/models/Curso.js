@@ -36,10 +36,9 @@ const cursoSchema = new mongoose.Schema({
       message: 'Pelo menos um turno deve ser informado'
     }
   },
-  status: {
-    type: String,
-    enum: ['ativo', 'inativo'],
-    default: 'ativo'
+  ativo: {
+    type: Boolean,
+    default: true
   }
 }, {
   timestamps: true,

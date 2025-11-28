@@ -83,8 +83,38 @@ npm start
 - `PUT /api/v1/instituicoes/:id` - Atualizar instituição
 - `DELETE /api/v1/instituicoes/:id` - Remover instituição
 
+### Cursos
+- `POST /api/v1/cursos` - Criar curso
+- `GET /api/v1/cursos` - Listar cursos
+- `PUT /api/v1/cursos/:id` - Atualizar curso
+- `DELETE /api/v1/cursos/:id` - Remover curso
+
+### Professores
+- `POST /api/v1/professores` - Criar professor
+- `GET /api/v1/professores` - Listar professores
+- `PUT /api/v1/professores/:id` - Atualizar professor
+- `DELETE /api/v1/professores/:id` - Remover professor
+
+### Laboratórios
+- `POST /api/v1/laboratorios` - Criar laboratório
+- `GET /api/v1/laboratorios` - Listar laboratórios
+- `PUT /api/v1/laboratorios/:id` - Atualizar laboratório
+- `DELETE /api/v1/laboratorios/:id` - Remover laboratório
+
+### Disciplinas
+- `POST /api/v1/disciplinas` - Criar disciplina
+- `GET /api/v1/disciplinas` - Listar disciplinas
+- `PUT /api/v1/disciplinas/:id` - Atualizar disciplina
+- `DELETE /api/v1/disciplinas/:id` - Remover disciplina
+
+### Blocos de Horário
+- `POST /api/v1/blocos` - Criar bloco
+- `GET /api/v1/blocos` - Listar blocos
+- `PUT /api/v1/blocos/:id` - Atualizar bloco
+- `DELETE /api/v1/blocos/:id` - Remover bloco
+
 #### Parâmetros de Consulta
-- `?ativo=true|false` - Filtrar por status
+- `?ativo=true|false` - Filtrar por status (onde aplicável)
 - `?nome=texto` - Filtrar por nome (contém)
 - `?page=1&limit=20` - Paginação
 
@@ -124,14 +154,24 @@ npm start
 ✅ **Mobile App - React Native**
 - Projeto React Native com Expo
 - Interface Material Design com React Native Paper
-- CRUD completo de Instituições idêntico ao web
+- Tela de Dashboard com navegação para todos os CRUDs
+- CRUD completo para todas as entidades do RF01:
+  - Instituições (nome, CNPJ, email, telefone, endereço, status)
+  - Cursos (nome, turnos, instituição)
+  - Professores (nome, email, telefone, status)
+  - Laboratórios (nome, capacidade, localização)
+  - Disciplinas (nome, carga horária, curso, professor)
+  - Blocos de Horário (turno, dia, início, fim, ordem)
 - Cards responsivos para listagem
 - Formulários modais para criação/edição
-- Filtros em tempo real
-- Navegação com React Navigation
-- Integração com mesma API do backend
-- Mensagens de feedback em português
+- Filtros em tempo real com Searchbar
+- Navegação com React Navigation e botão voltar
+- Integração com API do backend para todas as entidades
+- Mensagens de feedback em português com Snackbar
 - Confirmações nativas para exclusões
+- Loading indicators durante requisições
+- Pickers para seleção de entidades relacionadas
+- Validação de campos numéricos
 
 ✅ **Documentação**
 - README.md atualizado

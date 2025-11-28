@@ -32,11 +32,11 @@ const disciplinaSchema = new mongoose.Schema({
     required: [true, 'Carga horária é obrigatória'],
     min: [1, 'Carga horária deve ser maior que zero']
   },
-  professorResponsavel: {
+  professor: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Professor'
   },
-  status: {
+  ativo: {
     type: Boolean,
     default: true
   }

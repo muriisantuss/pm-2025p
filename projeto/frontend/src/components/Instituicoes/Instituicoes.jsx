@@ -19,6 +19,7 @@ import {
   TableHead,
   TableRow,
   CircularProgress,
+  Switch,
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -315,6 +316,17 @@ const Instituicoes = () => {
               multiline
               rows={2}
             />
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Typography>Status:</Typography>
+              <Switch
+                checked={formData.ativo}
+                onChange={(e) => setFormData({ ...formData, ativo: e.target.checked })}
+                color="primary"
+              />
+              <Typography color={formData.ativo ? 'success.main' : 'error.main'}>
+                {formData.ativo ? 'Ativo' : 'Inativo'}
+              </Typography>
+            </Box>
           </Box>
         </DialogContent>
         <DialogActions>
