@@ -6,23 +6,25 @@ import {
   Card,
   Title,
   Paragraph,
-  Chip,
   IconButton,
   Snackbar,
   Portal,
   Dialog,
   Button,
   TextInput,
+  ActivityIndicator,
   Switch,
   Text,
-  ActivityIndicator,
+  Chip,
 } from 'react-native-paper';
-import { instituicoesService } from '../../services/api';
+import { Picker } from '@react-native-picker/picker';
+import { cursosService, instituicoesService } from '../../services/api';
 
 /**
- * Tela de gerenciamento de instituições
+ * Tela de gerenciamento de cursos
  */
-const InstituicoesScreen = () => {
+const CursosScreen = () => {
+  const [cursos, setCursos] = useState([]);
   const [instituicoes, setInstituicoes] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -35,22 +37,30 @@ const InstituicoesScreen = () => {
   
   const [formData, setFormData] = useState({
     nome: '',
-    sigla: '',
-    cnpj: '',
-    email: '',
-    telefone: '',
-    endereco: '',
+    turnos: '',
+    instituicao: '',
     ativo: true,
   });
 
-  const carregarInstituicoes = async () => {
+  const turnosDisponiveis = [
+    'Matutino',
+    'Vespertino', 
+    'Noturno',
+    'Integral'
+  ];
+
+  const carregarDados = async () => {
     setLoading(true);
     try {
-      const response = await instituicoesService.listar();
-      setInstituicoes(response.data);
+      const [cursosResponse, instituicoesResponse] = await Promise.all([
+        cursosService.listar(),
+        instituicoesService.listar()
+      ]);
+      setCursos(cursosResponse.data);
+      setInstituicoes(instituicoesResponse.data);
     } catch (error) {
       console.error('Erro ao carregar:', error);
-      mostrarSnackbar('Erro ao carregar instituições');
+      mostrarSnackbar('Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -68,40 +78,30 @@ const InstituicoesScreen = () => {
       novosErros.nome = true;
     }
     
-    if (!formData.sigla.trim()) {
-      novosErros.sigla = true;
-    }
-    
-    if (!formData.cnpj.trim()) {
-      novosErros.cnpj = true;
+    if (!formData.instituicao) {
+      novosErros.instituicao = true;
     }
     
     setErrors(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const abrirDialog = (instituicao = null) => {
+  const abrirDialog = (curso = null) => {
     setErrors({});
-    if (instituicao) {
-      setEditingId(instituicao._id);
+    if (curso) {
+      setEditingId(curso._id);
       setFormData({
-        nome: instituicao.nome || '',
-        sigla: instituicao.sigla || '',
-        cnpj: instituicao.cnpj || '',
-        email: instituicao.email || '',
-        telefone: instituicao.telefone || '',
-        endereco: instituicao.endereco || '',
-        ativo: instituicao.ativo !== undefined ? instituicao.ativo : true,
+        nome: curso.nome || '',
+        turnos: curso.turnos || '',
+        instituicao: curso.instituicao?._id || '',
+        ativo: curso.ativo !== undefined ? curso.ativo : true,
       });
     } else {
       setEditingId(null);
       setFormData({
         nome: '',
-        sigla: '',
-        cnpj: '',
-        email: '',
-        telefone: '',
-        endereco: '',
+        turnos: '',
+        instituicao: '',
         ativo: true,
       });
     }
@@ -114,7 +114,7 @@ const InstituicoesScreen = () => {
     setErrors({});
   };
 
-  const salvarInstituicao = async () => {
+  const salvarCurso = async () => {
     if (!validarFormulario()) {
       mostrarSnackbar('Preencha todos os campos obrigatórios');
       return;
@@ -123,26 +123,26 @@ const InstituicoesScreen = () => {
     setSaving(true);
     try {
       if (editingId) {
-        await instituicoesService.atualizar(editingId, formData);
-        mostrarSnackbar('Instituição atualizada com sucesso');
+        await cursosService.atualizar(editingId, formData);
+        mostrarSnackbar('Curso atualizado com sucesso');
       } else {
-        await instituicoesService.criar(formData);
-        mostrarSnackbar('Instituição criada com sucesso');
+        await cursosService.criar(formData);
+        mostrarSnackbar('Curso criado com sucesso');
       }
       fecharDialog();
-      carregarInstituicoes();
+      carregarDados();
     } catch (error) {
-      const message = error.response?.data?.message || 'Erro ao salvar instituição';
+      const message = error.response?.data?.message || 'Erro ao salvar curso';
       mostrarSnackbar(message);
     } finally {
       setSaving(false);
     }
   };
 
-  const removerInstituicao = (id) => {
+  const removerCurso = (id) => {
     Alert.alert(
       'Confirmar Remoção',
-      'Tem certeza que deseja remover esta instituição?',
+      'Tem certeza que deseja remover este curso?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -150,11 +150,11 @@ const InstituicoesScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await instituicoesService.remover(id);
-              mostrarSnackbar('Instituição removida com sucesso');
-              await carregarInstituicoes(); // Aguardar recarregamento
+              await cursosService.remover(id);
+              mostrarSnackbar('Curso removido com sucesso');
+              await carregarDados(); // Aguardar recarregamento
             } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover instituição';
+              const message = error.response?.data?.message || 'Erro ao remover curso';
               mostrarSnackbar(message);
             }
           },
@@ -163,14 +163,14 @@ const InstituicoesScreen = () => {
     );
   };
 
-  const instituicoesFiltradas = instituicoes.filter((instituicao) =>
-    Object.values(instituicao).some((value) =>
+  const cursosFiltrados = cursos.filter((curso) =>
+    Object.values(curso).some((value) =>
       String(value).toLowerCase().includes(filtro.toLowerCase())
     )
   );
 
   useEffect(() => {
-    carregarInstituicoes();
+    carregarDados();
   }, []);
 
   if (loading) {
@@ -185,7 +185,7 @@ const InstituicoesScreen = () => {
     <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
       <View style={{ padding: 16 }}>
         <Searchbar
-          placeholder="Filtrar instituições..."
+          placeholder="Filtrar cursos..."
           onChangeText={setFiltro}
           value={filtro}
           style={{ marginBottom: 16 }}
@@ -193,37 +193,36 @@ const InstituicoesScreen = () => {
       </View>
 
       <ScrollView style={{ flex: 1, padding: 16 }}>
-        {instituicoesFiltradas.map((instituicao) => (
-          <Card key={instituicao._id} style={{ marginBottom: 12, backgroundColor: '#fff' }}>
+        {cursosFiltrados.map((curso) => (
+          <Card key={curso._id} style={{ marginBottom: 12, backgroundColor: '#fff' }}>
             <Card.Content>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
-                  <Title>{instituicao.nome}</Title>
-                  <Paragraph>Sigla: {instituicao.sigla}</Paragraph>
-                  <Paragraph>CNPJ: {instituicao.cnpj}</Paragraph>
-                  <Paragraph>Email: {instituicao.email}</Paragraph>
+                  <Title>{curso.nome}</Title>
+                  <Paragraph>Turnos: {curso.turnos}</Paragraph>
+                  <Paragraph>Instituição: {curso.instituicao?.nome || 'N/A'}</Paragraph>
                   <Chip
                     mode="outlined"
                     style={{ 
                       alignSelf: 'flex-start', 
                       marginTop: 8,
-                      backgroundColor: instituicao.ativo ? '#e8f5e8' : '#ffeaea'
+                      backgroundColor: curso.ativo ? '#e8f5e8' : '#ffeaea'
                     }}
                   >
-                    {instituicao.ativo ? 'Ativo' : 'Inativo'}
+                    {curso.ativo ? 'Ativo' : 'Inativo'}
                   </Chip>
                 </View>
                 <View style={{ flexDirection: 'row' }}>
                   <IconButton
                     icon="pencil"
                     mode="contained"
-                    onPress={() => abrirDialog(instituicao)}
+                    onPress={() => abrirDialog(curso)}
                   />
                   <IconButton
                     icon="delete"
                     mode="contained"
                     iconColor="#d32f2f"
-                    onPress={() => removerInstituicao(instituicao._id)}
+                    onPress={() => removerCurso(curso._id)}
                   />
                 </View>
               </View>
@@ -246,7 +245,7 @@ const InstituicoesScreen = () => {
       <Portal>
         <Dialog visible={dialogVisible} onDismiss={fecharDialog}>
           <Dialog.Title>
-            {editingId ? 'Editar Instituição' : 'Nova Instituição'}
+            {editingId ? 'Editar Curso' : 'Novo Curso'}
           </Dialog.Title>
           <Dialog.ScrollArea>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
@@ -261,54 +260,43 @@ const InstituicoesScreen = () => {
                 error={errors.nome}
                 style={{ marginBottom: 12 }}
               />
-              <TextInput
-                label="Sigla *"
-                value={formData.sigla}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, sigla: text.toUpperCase() });
-                  if (errors.sigla) setErrors({ ...errors, sigla: false });
-                }}
-                mode="outlined"
-                error={errors.sigla}
-                maxLength={10}
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="CNPJ *"
-                value={formData.cnpj}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, cnpj: text });
-                  if (errors.cnpj) setErrors({ ...errors, cnpj: false });
-                }}
-                mode="outlined"
-                error={errors.cnpj}
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="Email"
-                value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
-                mode="outlined"
-                keyboardType="email-address"
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="Telefone"
-                value={formData.telefone}
-                onChangeText={(text) => setFormData({ ...formData, telefone: text })}
-                mode="outlined"
-                keyboardType="phone-pad"
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="Endereço"
-                value={formData.endereco}
-                onChangeText={(text) => setFormData({ ...formData, endereco: text })}
-                mode="outlined"
-                multiline
-                numberOfLines={3}
-                style={{ marginBottom: 12 }}
-              />
+              
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ marginBottom: 8, color: errors.turnos ? '#d32f2f' : '#666' }}>Turnos</Text>
+                <Picker
+                  selectedValue={formData.turnos}
+                  onValueChange={(value) => setFormData({ ...formData, turnos: value })}
+                  style={{ backgroundColor: '#f5f5f5', borderRadius: 4 }}
+                >
+                  <Picker.Item label="Selecione um turno" value="" />
+                  {turnosDisponiveis.map((turno) => (
+                    <Picker.Item key={turno} label={turno} value={turno} />
+                  ))}
+                </Picker>
+              </View>
+              
+              <View style={{ marginBottom: 12 }}>
+                <Text style={{ marginBottom: 8, color: errors.instituicao ? '#d32f2f' : '#666' }}>Instituição *</Text>
+                <Picker
+                  selectedValue={formData.instituicao}
+                  onValueChange={(value) => {
+                    setFormData({ ...formData, instituicao: value });
+                    if (errors.instituicao) setErrors({ ...errors, instituicao: false });
+                  }}
+                  style={{ 
+                    backgroundColor: errors.instituicao ? '#ffebee' : '#f5f5f5', 
+                    borderRadius: 4,
+                    borderWidth: errors.instituicao ? 1 : 0,
+                    borderColor: '#d32f2f'
+                  }}
+                >
+                  <Picker.Item label="Selecione uma instituição" value="" />
+                  {instituicoes.map((inst) => (
+                    <Picker.Item key={inst._id} label={inst.nome} value={inst._id} />
+                  ))}
+                </Picker>
+              </View>
+              
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
                 <Text>Ativo: </Text>
                 <Switch
@@ -321,7 +309,7 @@ const InstituicoesScreen = () => {
           <Dialog.Actions>
             <Button onPress={fecharDialog} disabled={saving}>Cancelar</Button>
             <Button 
-              onPress={salvarInstituicao} 
+              onPress={salvarCurso} 
               mode="contained"
               disabled={saving}
               loading={saving}
@@ -343,4 +331,4 @@ const InstituicoesScreen = () => {
   );
 };
 
-export default InstituicoesScreen;
+export default CursosScreen;

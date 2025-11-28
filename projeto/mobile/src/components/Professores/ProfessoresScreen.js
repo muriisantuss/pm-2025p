@@ -17,13 +17,13 @@ import {
   Text,
   ActivityIndicator,
 } from 'react-native-paper';
-import { instituicoesService } from '../../services/api';
+import { professoresService } from '../../services/api';
 
 /**
- * Tela de gerenciamento de instituições
+ * Tela de gerenciamento de professores
  */
-const InstituicoesScreen = () => {
-  const [instituicoes, setInstituicoes] = useState([]);
+const ProfessoresScreen = () => {
+  const [professores, setProfessores] = useState([]);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [dialogVisible, setDialogVisible] = useState(false);
@@ -35,22 +35,19 @@ const InstituicoesScreen = () => {
   
   const [formData, setFormData] = useState({
     nome: '',
-    sigla: '',
-    cnpj: '',
     email: '',
     telefone: '',
-    endereco: '',
     ativo: true,
   });
 
-  const carregarInstituicoes = async () => {
+  const carregarProfessores = async () => {
     setLoading(true);
     try {
-      const response = await instituicoesService.listar();
-      setInstituicoes(response.data);
+      const response = await professoresService.listar();
+      setProfessores(response.data);
     } catch (error) {
       console.error('Erro ao carregar:', error);
-      mostrarSnackbar('Erro ao carregar instituições');
+      mostrarSnackbar('Erro ao carregar professores');
     } finally {
       setLoading(false);
     }
@@ -68,40 +65,32 @@ const InstituicoesScreen = () => {
       novosErros.nome = true;
     }
     
-    if (!formData.sigla.trim()) {
-      novosErros.sigla = true;
-    }
-    
-    if (!formData.cnpj.trim()) {
-      novosErros.cnpj = true;
+    if (!formData.email.trim()) {
+      novosErros.email = true;
+    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+      novosErros.email = true;
     }
     
     setErrors(novosErros);
     return Object.keys(novosErros).length === 0;
   };
 
-  const abrirDialog = (instituicao = null) => {
+  const abrirDialog = (professor = null) => {
     setErrors({});
-    if (instituicao) {
-      setEditingId(instituicao._id);
+    if (professor) {
+      setEditingId(professor._id);
       setFormData({
-        nome: instituicao.nome || '',
-        sigla: instituicao.sigla || '',
-        cnpj: instituicao.cnpj || '',
-        email: instituicao.email || '',
-        telefone: instituicao.telefone || '',
-        endereco: instituicao.endereco || '',
-        ativo: instituicao.ativo !== undefined ? instituicao.ativo : true,
+        nome: professor.nome || '',
+        email: professor.email || '',
+        telefone: professor.telefone || '',
+        ativo: professor.ativo !== undefined ? professor.ativo : true,
       });
     } else {
       setEditingId(null);
       setFormData({
         nome: '',
-        sigla: '',
-        cnpj: '',
         email: '',
         telefone: '',
-        endereco: '',
         ativo: true,
       });
     }
@@ -114,7 +103,7 @@ const InstituicoesScreen = () => {
     setErrors({});
   };
 
-  const salvarInstituicao = async () => {
+  const salvarProfessor = async () => {
     if (!validarFormulario()) {
       mostrarSnackbar('Preencha todos os campos obrigatórios');
       return;
@@ -123,26 +112,26 @@ const InstituicoesScreen = () => {
     setSaving(true);
     try {
       if (editingId) {
-        await instituicoesService.atualizar(editingId, formData);
-        mostrarSnackbar('Instituição atualizada com sucesso');
+        await professoresService.atualizar(editingId, formData);
+        mostrarSnackbar('Professor atualizado com sucesso');
       } else {
-        await instituicoesService.criar(formData);
-        mostrarSnackbar('Instituição criada com sucesso');
+        await professoresService.criar(formData);
+        mostrarSnackbar('Professor criado com sucesso');
       }
       fecharDialog();
-      carregarInstituicoes();
+      carregarProfessores();
     } catch (error) {
-      const message = error.response?.data?.message || 'Erro ao salvar instituição';
+      const message = error.response?.data?.message || 'Erro ao salvar professor';
       mostrarSnackbar(message);
     } finally {
       setSaving(false);
     }
   };
 
-  const removerInstituicao = (id) => {
+  const removerProfessor = (id) => {
     Alert.alert(
       'Confirmar Remoção',
-      'Tem certeza que deseja remover esta instituição?',
+      'Tem certeza que deseja remover este professor?',
       [
         { text: 'Cancelar', style: 'cancel' },
         {
@@ -150,11 +139,11 @@ const InstituicoesScreen = () => {
           style: 'destructive',
           onPress: async () => {
             try {
-              await instituicoesService.remover(id);
-              mostrarSnackbar('Instituição removida com sucesso');
-              await carregarInstituicoes(); // Aguardar recarregamento
+              await professoresService.remover(id);
+              mostrarSnackbar('Professor removido com sucesso');
+              await carregarProfessores(); // Aguardar recarregamento
             } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover instituição';
+              const message = error.response?.data?.message || 'Erro ao remover professor';
               mostrarSnackbar(message);
             }
           },
@@ -163,14 +152,14 @@ const InstituicoesScreen = () => {
     );
   };
 
-  const instituicoesFiltradas = instituicoes.filter((instituicao) =>
-    Object.values(instituicao).some((value) =>
+  const professoresFiltrados = professores.filter((professor) =>
+    Object.values(professor).some((value) =>
       String(value).toLowerCase().includes(filtro.toLowerCase())
     )
   );
 
   useEffect(() => {
-    carregarInstituicoes();
+    carregarProfessores();
   }, []);
 
   if (loading) {
@@ -185,7 +174,7 @@ const InstituicoesScreen = () => {
     <View style={{ flex: 1, backgroundColor: '#f5f5f5' }}>
       <View style={{ padding: 16 }}>
         <Searchbar
-          placeholder="Filtrar instituições..."
+          placeholder="Filtrar professores..."
           onChangeText={setFiltro}
           value={filtro}
           style={{ marginBottom: 16 }}
@@ -193,37 +182,36 @@ const InstituicoesScreen = () => {
       </View>
 
       <ScrollView style={{ flex: 1, padding: 16 }}>
-        {instituicoesFiltradas.map((instituicao) => (
-          <Card key={instituicao._id} style={{ marginBottom: 12, backgroundColor: '#fff' }}>
+        {professoresFiltrados.map((professor) => (
+          <Card key={professor._id} style={{ marginBottom: 12, backgroundColor: '#fff' }}>
             <Card.Content>
               <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                 <View style={{ flex: 1 }}>
-                  <Title>{instituicao.nome}</Title>
-                  <Paragraph>Sigla: {instituicao.sigla}</Paragraph>
-                  <Paragraph>CNPJ: {instituicao.cnpj}</Paragraph>
-                  <Paragraph>Email: {instituicao.email}</Paragraph>
+                  <Title>{professor.nome}</Title>
+                  <Paragraph>Email: {professor.email}</Paragraph>
+                  {professor.telefone && <Paragraph>Telefone: {professor.telefone}</Paragraph>}
                   <Chip
                     mode="outlined"
                     style={{ 
                       alignSelf: 'flex-start', 
                       marginTop: 8,
-                      backgroundColor: instituicao.ativo ? '#e8f5e8' : '#ffeaea'
+                      backgroundColor: professor.ativo ? '#e8f5e8' : '#ffeaea'
                     }}
                   >
-                    {instituicao.ativo ? 'Ativo' : 'Inativo'}
+                    {professor.ativo ? 'Ativo' : 'Inativo'}
                   </Chip>
                 </View>
                 <View style={{ flexDirection: 'row' }}>
                   <IconButton
                     icon="pencil"
                     mode="contained"
-                    onPress={() => abrirDialog(instituicao)}
+                    onPress={() => abrirDialog(professor)}
                   />
                   <IconButton
                     icon="delete"
                     mode="contained"
                     iconColor="#d32f2f"
-                    onPress={() => removerInstituicao(instituicao._id)}
+                    onPress={() => removerProfessor(professor._id)}
                   />
                 </View>
               </View>
@@ -246,7 +234,7 @@ const InstituicoesScreen = () => {
       <Portal>
         <Dialog visible={dialogVisible} onDismiss={fecharDialog}>
           <Dialog.Title>
-            {editingId ? 'Editar Instituição' : 'Nova Instituição'}
+            {editingId ? 'Editar Professor' : 'Novo Professor'}
           </Dialog.Title>
           <Dialog.ScrollArea>
             <ScrollView contentContainerStyle={{ paddingHorizontal: 24 }}>
@@ -262,33 +250,14 @@ const InstituicoesScreen = () => {
                 style={{ marginBottom: 12 }}
               />
               <TextInput
-                label="Sigla *"
-                value={formData.sigla}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, sigla: text.toUpperCase() });
-                  if (errors.sigla) setErrors({ ...errors, sigla: false });
-                }}
-                mode="outlined"
-                error={errors.sigla}
-                maxLength={10}
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="CNPJ *"
-                value={formData.cnpj}
-                onChangeText={(text) => {
-                  setFormData({ ...formData, cnpj: text });
-                  if (errors.cnpj) setErrors({ ...errors, cnpj: false });
-                }}
-                mode="outlined"
-                error={errors.cnpj}
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="Email"
+                label="Email *"
                 value={formData.email}
-                onChangeText={(text) => setFormData({ ...formData, email: text })}
+                onChangeText={(text) => {
+                  setFormData({ ...formData, email: text });
+                  if (errors.email) setErrors({ ...errors, email: false });
+                }}
                 mode="outlined"
+                error={errors.email}
                 keyboardType="email-address"
                 style={{ marginBottom: 12 }}
               />
@@ -298,15 +267,6 @@ const InstituicoesScreen = () => {
                 onChangeText={(text) => setFormData({ ...formData, telefone: text })}
                 mode="outlined"
                 keyboardType="phone-pad"
-                style={{ marginBottom: 12 }}
-              />
-              <TextInput
-                label="Endereço"
-                value={formData.endereco}
-                onChangeText={(text) => setFormData({ ...formData, endereco: text })}
-                mode="outlined"
-                multiline
-                numberOfLines={3}
                 style={{ marginBottom: 12 }}
               />
               <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 12 }}>
@@ -321,7 +281,7 @@ const InstituicoesScreen = () => {
           <Dialog.Actions>
             <Button onPress={fecharDialog} disabled={saving}>Cancelar</Button>
             <Button 
-              onPress={salvarInstituicao} 
+              onPress={salvarProfessor} 
               mode="contained"
               disabled={saving}
               loading={saving}
@@ -343,4 +303,4 @@ const InstituicoesScreen = () => {
   );
 };
 
-export default InstituicoesScreen;
+export default ProfessoresScreen;
