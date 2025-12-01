@@ -49,6 +49,12 @@ const HomeScreen = ({ navigation }) => {
       icon: 'calendar-check',
       route: 'Aulas',
     },
+    {
+      title: 'Consulta de Horários',
+      description: 'Visualizar grade de horários e ocupação',
+      icon: 'chart-timeline-variant',
+      route: 'Consultas',
+    },
   ];
 
   return (

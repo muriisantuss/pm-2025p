@@ -22,6 +22,7 @@ import {
   MenuBook as MenuBookIcon,
   Schedule as ScheduleIcon,
   Event as EventIcon,
+  Assessment as AssessmentIcon,
 } from '@mui/icons-material';
 import Instituicoes from '../Instituicoes/Instituicoes';
 import Cursos from '../Cursos/Cursos';
@@ -30,6 +31,7 @@ import Laboratorios from '../Laboratorios/Laboratorios';
 import Disciplinas from '../Disciplinas/Disciplinas';
 import Blocos from '../Blocos/Blocos';
 import Aulas from '../Aulas/Aulas';
+import Consultas from '../Consultas/Consultas';
 
 const Menu = ({ open, onClose }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -75,6 +77,10 @@ const Menu = ({ open, onClose }) => {
 
   const handleAulasClick = () => {
     handleOpenModal('Agendamento de Aulas', <Aulas />);
+  };
+
+  const handleConsultasClick = () => {
+    handleOpenModal('Consulta de Horários', <Consultas />);
   };
 
   return (
@@ -142,6 +148,14 @@ const Menu = ({ open, onClose }) => {
                   <EventIcon />
                 </ListItemIcon>
                 <ListItemText primary="Agendamento de Aulas" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleConsultasClick}>
+                <ListItemIcon>
+                  <AssessmentIcon />
+                </ListItemIcon>
+                <ListItemText primary="Consulta de Horários" />
               </ListItemButton>
             </ListItem>
           </List>

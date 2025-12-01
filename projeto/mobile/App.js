@@ -13,6 +13,7 @@ import LaboratoriosScreen from './src/components/Laboratorios/LaboratoriosScreen
 import DisciplinasScreen from './src/components/Disciplinas/DisciplinasScreen';
 import BlocosScreen from './src/components/Blocos/BlocosScreen';
 import AulasScreen from './src/components/Aulas/AulasScreen';
+import ConsultasScreen from './src/components/Consultas/ConsultasScreen';
 
 const Stack = createStackNavigator();
 
@@ -91,6 +92,11 @@ export default function App() {
             name="Aulas" 
             component={AulasScreen}
             options={{ title: 'Agendamento de Aulas' }}
+          />
+          <Stack.Screen 
+            name="Consultas" 
+            component={ConsultasScreen}
+            options={{ title: 'Consulta de Horários' }}
           />
         </Stack.Navigator>
         <StatusBar style="light" />

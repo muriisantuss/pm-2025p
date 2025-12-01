@@ -5,7 +5,7 @@ import axios from 'axios';
  * @module API
  */
 
-const API_BASE_URL = 'https://better-ravens-drive.loca.lt/api/v1';
+const API_BASE_URL = 'localhost:3000api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,

@@ -116,20 +116,61 @@ const criarAula = async (req, res, next) => {
  */
 const listarAulas = async (req, res, next) => {
   try {
-    const { page = 1, limit = 20, data, laboratorio, professor } = req.query;
+    const { page = 1, limit = 20, data, laboratorio, professor, curso, dataInicio, dataFim } = req.query;
     const filter = sanitizarFiltros(req.query);
     
     // Filtros específicos para aulas
     if (data) {
       filter.data = normalizarData(data);
     }
+    
+    // Filtro por intervalo de datas (lógica robusta para timezone)
+    if (dataInicio || dataFim) {
+      const filtroData = {};
+      
+      // Início do dia da data inicial
+      if (dataInicio) {
+        const start = new Date(dataInicio);
+        start.setUTCHours(0, 0, 0, 0);
+        filtroData.$gte = start;
+      }
+      
+      // Final do dia da data final (ou mesmo dia se filtro de 1 dia)
+      if (dataFim) {
+        const end = new Date(dataFim);
+        end.setUTCHours(23, 59, 59, 999);
+        filtroData.$lte = end;
+      } else if (dataInicio) {
+        // Se mandou só dataInicio (visão diária), o fim é o final do MESMO dia
+        const end = new Date(dataInicio);
+        end.setUTCHours(23, 59, 59, 999);
+        filtroData.$lte = end;
+      }
+      
+      filter.data = filtroData;
+    }
+    
     if (laboratorio) {
       filter.laboratorio = laboratorio;
     }
     if (professor) {
       filter.professor = professor;
     }
+    if (curso) {
+      filter.curso = curso;
+    }
 
+    // Debug: Log dos parâmetros de consulta
+    console.log('=== DEBUG CONSULTA AULAS ===');
+    console.log('Parâmetros recebidos:', { dataInicio, dataFim, laboratorio, professor });
+    console.log('Filtro construído:', JSON.stringify(filter, null, 2));
+    
+    if (filter.data) {
+      console.log('Filtro de data detalhado:');
+      if (filter.data.$gte) console.log('  $gte (>=):', filter.data.$gte.toISOString());
+      if (filter.data.$lte) console.log('  $lte (<=):', filter.data.$lte.toISOString());
+    }
+    
     const skip = (page - 1) * limit;
     const aulas = await Aula.find(filter)
       .populate('bloco')
@@ -140,6 +181,24 @@ const listarAulas = async (req, res, next) => {
       .skip(skip)
       .limit(parseInt(limit))
       .sort({ data: 1, 'bloco.ordem': 1 });
+    
+    // Debug: Log dos resultados
+    console.log(`Encontradas ${aulas.length} aulas`);
+    
+    if (aulas.length > 0) {
+      console.log('Datas das aulas encontradas:');
+      aulas.slice(0, 3).forEach((aula, i) => {
+        console.log(`  Aula ${i+1}: ${aula.data.toISOString()} - ${aula.disciplina?.nome}`);
+      });
+    } else {
+      // Se não encontrou nada, vamos ver o que tem no banco
+      const todasAulas = await Aula.find({}).populate('disciplina').limit(5);
+      console.log('Aulas disponíveis no banco (primeiras 5):');
+      todasAulas.forEach((aula, i) => {
+        console.log(`  Aula ${i+1}: ${aula.data.toISOString()} - ${aula.disciplina?.nome}`);
+      });
+    }
+    console.log('=== FIM DEBUG ===');
 
     res.json(aulas);
   } catch (error) {

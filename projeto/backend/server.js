@@ -9,6 +9,7 @@ const { connectDatabase } = require('./src/config/database');
 const { createHttpsServer } = require('./src/config/httpsConfig');
 const { setupSwagger } = require('./src/config/swagger');
 const errorHandler = require('./src/middleware/errorHandler');
+const SeederService = require('./src/services/seeder');
 
 // Rotas
 const instituicoesRoutes = require('./src/routes/instituicoes');
@@ -18,6 +19,7 @@ const laboratoriosRoutes = require('./src/routes/laboratorios');
 const disciplinasRoutes = require('./src/routes/disciplinas');
 const blocosRoutes = require('./src/routes/blocos');
 const aulasRoutes = require('./src/routes/aulas');
+const resetRoutes = require('./src/routes/reset');
 
 /**
  * Aplicação Express principal
@@ -38,8 +40,12 @@ app.use(cors({
 // Parser JSON
 app.use(express.json());
 
-// Conectar ao banco de dados
-connectDatabase();
+// Conectar ao banco de dados e executar seeder se necessário
+connectDatabase().then(async () => {
+  if (await SeederService.precisaPopular()) {
+    await SeederService.executar();
+  }
+}).catch(console.error);
 
 // Configurar Swagger
 setupSwagger(app);
@@ -52,6 +58,7 @@ app.use('/api/v1/laboratorios', laboratoriosRoutes);
 app.use('/api/v1/disciplinas', disciplinasRoutes);
 app.use('/api/v1/blocos', blocosRoutes);
 app.use('/api/v1/aulas', aulasRoutes);
+app.use('/api/v1/reset-dados', resetRoutes);
 
 // Rota de teste
 app.get('/', (req, res) => {

@@ -53,6 +53,8 @@ npm install
 npm run dev
 ```
 
+**Nota:** O backend executa automaticamente o seeding de dados de teste na primeira inicialização se o banco estiver vazio.
+
 ### Executar Frontend
 ```bash
 cd projeto/frontend
@@ -119,12 +121,18 @@ npm start
 - `PUT /api/v1/aulas/:id` - Atualizar aula (com validação de conflitos)
 - `DELETE /api/v1/aulas/:id` - Remover aula
 
+### Desenvolvimento
+- `POST /api/v1/reset-dados` - Reset e repopula o banco (apenas desenvolvimento)
+
 #### Parâmetros de Consulta
 - `?ativo=true|false` - Filtrar por status (onde aplicável)
 - `?nome=texto` - Filtrar por nome (contém)
 - `?data=YYYY-MM-DD` - Filtrar por data (aulas)
+- `?dataInicio=YYYY-MM-DD` - Filtrar por data inicial (aulas)
+- `?dataFim=YYYY-MM-DD` - Filtrar por data final (aulas)
 - `?laboratorio=id` - Filtrar por laboratório (aulas)
 - `?professor=id` - Filtrar por professor (aulas)
+- `?curso=id` - Filtrar por curso (aulas)
 - `?page=1&limit=20` - Paginação
 
 ## Funcionalidades Implementadas
@@ -213,8 +221,91 @@ npm start
 - Grid com formatação adequada e filtros em tempo real
 - Integração total com API do backend
 
+✅ **Backend - Módulo de Consultas (RF03)**
+- API refinada com filtros combinados para consultas avançadas:
+  - Filtro por laboratório, professor e curso
+  - Filtro por intervalo de datas (dataInicio e dataFim)
+  - Suporte a consultas de grade semanal
+- Operadores MongoDB ($gte, $lte) para consultas de intervalo
+- Populate obrigatório para trazer nomes das entidades relacionadas
+- Ordenação por data e ordem do bloco para visualização cronológica
+
+✅ **Frontend - Módulo de Consultas (RF03)**
+- **Navegação por Períodos Dinâmicos**: Sistema similar ao Google Calendar
+  - Tabs para alternar entre Mês, Semana e Dia
+  - Navegação com setas (anterior/próximo) baseada no modo selecionado
+  - Botão "Hoje" para voltar rapidamente à data atual
+  - Títulos dinâmicos (ex: "Dezembro 2025", "01/12 - 07/12")
+- **Visualização Adaptativa**:
+  - **Modo Mês**: Grid de cards com resumo das aulas
+  - **Modo Semana**: Grade tabular completa (Dias × Blocos)
+  - **Modo Dia**: Lista detalhada dos horários do dia selecionado
+- **Filtros Inteligentes**:
+  - Select "Tipo de Recurso" (Laboratório ou Professor)
+  - Select dinâmico para escolha do item específico
+  - Busca automática ao alterar período ou filtros
+- **Grade de Horários Aprimorada**:
+  - Células coloridas por disciplina (Algoritmos, Banco de Dados, etc.)
+  - Cards com informações secundárias (professor/laboratório)
+  - Células vazias com indicador visual "-"
+  - Contador de aulas encontradas
+- **UX Melhorada**:
+  - LinearProgress durante carregamento
+  - Mensagens informativas para estados vazios
+  - Interface responsiva com Material-UI e date-fns
+
+✅ **Mobile - Módulo de Consultas (RF03)**
+- **Navegação Semanal Intuitiva**:
+  - Cabeçalho com navegação por setas (semana anterior/próxima)
+  - Título dinâmico mostrando intervalo da semana (DD/MM - DD/MM)
+  - Botão "Hoje" para retornar à semana atual
+  - Busca automática ao navegar entre semanas
+- **Modal de Filtros Otimizado**:
+  - Ícone de filtro no AppBar para economizar espaço
+  - Modal com RadioButtons para seleção de tipo (Lab/Prof)
+  - Picker dinâmico baseado na seleção
+  - Chip indicativo do filtro ativo no cabeçalho
+- **SectionList Aprimorada**:
+  - Seções por dia da semana com datas formatadas (SEGUNDA-FEIRA - DD/MM)
+  - Cards redesenhados com horário em destaque
+  - Informações hierárquicas (horário → disciplina → professor/lab)
+  - Cores consistentes com tema Material Design
+- **Estados de Interface**:
+  - Tela de boas-vindas quando não há filtros configurados
+  - ListEmptyComponent com ícone e mensagem amigável
+  - ActivityIndicator durante navegação entre períodos
+  - Snackbar para feedback de ações
+- **Performance Otimizada**:
+  - Carregamento automático ao alterar filtros ou período
+  - SectionList para listas grandes
+  - Integração completa com API do backend
+
+✅ **Sistema de Seeding Automático**
+- Serviço `SeederService` para população automática do banco
+- Execução automática na inicialização se banco vazio
+- Dados de teste completos:
+  - 1 Instituição (FATEC SJC)
+  - 2 Cursos (Análise de Sistemas, Gestão Empresarial)
+  - 2 Laboratórios (Lab 1, Lab 2)
+  - 2 Professores (Prof. Silva, Prof. Santos)
+  - 3 Disciplinas (Algoritmos, Banco de Dados, Gestão de Projetos)
+  - 4 Blocos de horário (Manhã 1-2, Noite 1-2)
+  - 6 Aulas distribuídas na próxima semana
+- Endpoint `/api/v1/reset-dados` para reset em desenvolvimento
+- Logs informativos no console do backend
+
+✅ **Dependências e Bibliotecas**
+- **Frontend**: Material-UI, React Router, Axios, date-fns (para manipulação de datas)
+- **Mobile**: React Native Paper, React Navigation, Expo, Picker nativo
+- **Backend**: Express, Mongoose, Swagger, Helmet, CORS, Morgan
+- **Infraestrutura**: Docker, MongoDB, Portainer
+
 ✅ **Documentação**
-- README.md atualizado
-- Documentos de requisitos e horários
-- JSDoc em todo o código
-- Documentação Swagger da API
+- README.md atualizado com todas as funcionalidades implementadas
+- Documentos de requisitos e horários dos laboratórios
+- JSDoc completo em todo o código do backend
+- Documentação Swagger da API em `/api-docs`
+- Instruções detalhadas de instalação e execução
+- Estrutura de pastas e arquitetura do projeto
+- Endpoints da API com exemplos de uso
+- Funcionalidades de cada módulo (RF01, RF02, RF03)
