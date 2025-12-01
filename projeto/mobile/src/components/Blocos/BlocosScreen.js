@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Platform } from 'react-native';
 import {
   FAB,
   Searchbar,
@@ -165,27 +165,35 @@ const BlocosScreen = () => {
   };
 
   const removerBloco = (id) => {
-    Alert.alert(
-      'Confirmar Remoção',
-      'Tem certeza que deseja remover este bloco?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await blocosService.remover(id);
-              mostrarSnackbar('Bloco removido com sucesso');
-              await carregarBlocos(); // Aguardar recarregamento
-            } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover bloco';
-              mostrarSnackbar(message);
-            }
+    const confirmarRemocao = async () => {
+      try {
+        await blocosService.remover(id);
+        mostrarSnackbar('Bloco removido com sucesso');
+        await carregarBlocos();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Erro ao remover bloco';
+        mostrarSnackbar(message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover este bloco?')) {
+        confirmarRemocao();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar Remoção',
+        'Tem certeza que deseja remover este bloco?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: confirmarRemocao,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const getDiaSemanaTexto = (diaSemana) => {
@@ -260,6 +268,7 @@ const BlocosScreen = () => {
           bottom: 0,
         }}
         onPress={() => abrirDialog()}
+        animated={Platform.OS !== 'web'}
       />
 
       <Portal>

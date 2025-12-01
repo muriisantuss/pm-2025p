@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Platform } from 'react-native';
 import {
   FAB,
   Searchbar,
@@ -127,27 +127,35 @@ const LaboratoriosScreen = () => {
   };
 
   const removerLaboratorio = (id) => {
-    Alert.alert(
-      'Confirmar Remoção',
-      'Tem certeza que deseja remover este laboratório?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await laboratoriosService.remover(id);
-              mostrarSnackbar('Laboratório removido com sucesso');
-              await carregarLaboratorios(); // Aguardar recarregamento
-            } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover laboratório';
-              mostrarSnackbar(message);
-            }
+    const confirmarRemocao = async () => {
+      try {
+        await laboratoriosService.remover(id);
+        mostrarSnackbar('Laboratório removido com sucesso');
+        await carregarLaboratorios();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Erro ao remover laboratório';
+        mostrarSnackbar(message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover este laboratório?')) {
+        confirmarRemocao();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar Remoção',
+        'Tem certeza que deseja remover este laboratório?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: confirmarRemocao,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const laboratoriosFiltrados = laboratorios.filter((laboratorio) =>
@@ -217,6 +225,7 @@ const LaboratoriosScreen = () => {
           bottom: 0,
         }}
         onPress={() => abrirDialog()}
+        animated={Platform.OS !== 'web'}
       />
 
       <Portal>

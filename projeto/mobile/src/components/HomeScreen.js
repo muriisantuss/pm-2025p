@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ScrollView, StatusBar } from 'react-native';
+import { View, ScrollView, StatusBar, Platform } from 'react-native';
 import { Card, Title, Paragraph, List, Appbar } from 'react-native-paper';
 
 /**
@@ -43,6 +43,12 @@ const HomeScreen = ({ navigation }) => {
       icon: 'clock-outline',
       route: 'Blocos',
     },
+    {
+      title: 'Agendamento de Aulas',
+      description: 'Agendar e gerenciar aulas nos laboratórios',
+      icon: 'calendar-check',
+      route: 'Aulas',
+    },
   ];
 
   return (
@@ -52,7 +58,11 @@ const HomeScreen = ({ navigation }) => {
         <Appbar.Content title="Sistema de Laboratórios" titleStyle={{ color: '#fff' }} />
       </Appbar.Header>
 
-      <ScrollView style={{ flex: 1, padding: 16 }}>
+      <ScrollView 
+        style={{ flex: 1 }} 
+        contentContainerStyle={{ flexGrow: 1, padding: 16 }}
+        showsVerticalScrollIndicator={Platform.OS !== 'web'}
+      >
         <Card style={{ marginBottom: 16 }}>
           <Card.Content>
             <Title>Bem-vindo!</Title>

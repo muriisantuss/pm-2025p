@@ -113,9 +113,18 @@ npm start
 - `PUT /api/v1/blocos/:id` - Atualizar bloco
 - `DELETE /api/v1/blocos/:id` - Remover bloco
 
+### Aulas (Alocação de Horários)
+- `POST /api/v1/aulas` - Criar aula (com validação de conflitos)
+- `GET /api/v1/aulas` - Listar aulas (com filtros por data, laboratório, professor)
+- `PUT /api/v1/aulas/:id` - Atualizar aula (com validação de conflitos)
+- `DELETE /api/v1/aulas/:id` - Remover aula
+
 #### Parâmetros de Consulta
 - `?ativo=true|false` - Filtrar por status (onde aplicável)
 - `?nome=texto` - Filtrar por nome (contém)
+- `?data=YYYY-MM-DD` - Filtrar por data (aulas)
+- `?laboratorio=id` - Filtrar por laboratório (aulas)
+- `?professor=id` - Filtrar por professor (aulas)
 - `?page=1&limit=20` - Paginação
 
 ## Funcionalidades Implementadas
@@ -150,6 +159,12 @@ npm start
 - Modais para edição e criação
 - Integração com API do backend
 - Design responsivo para mobile e desktop
+- **Módulo de Aulas (RF02)**: Interface completa para agendamento com:
+  - Formulário com todos os campos obrigatórios (semestre, data, horário, etc.)
+  - Selects populados automaticamente com dados das entidades relacionadas
+  - Validação de conflitos com mensagens claras do backend
+  - Grid com formatação de data em português (DD/MM/AAAA)
+  - Tratamento específico para erros 409 (conflitos de horário)
 
 ✅ **Mobile App - React Native**
 - Projeto React Native com Expo
@@ -172,6 +187,31 @@ npm start
 - Loading indicators durante requisições
 - Pickers para seleção de entidades relacionadas
 - Validação de campos numéricos
+- **Módulo de Aulas (RF02)**: Tela completa para agendamento com:
+  - Formulário com todos os campos obrigatórios usando Pickers nativos
+  - Carregamento automático de listas auxiliares via Promise.all
+  - Tratamento específico para conflitos de horário (erro 409)
+  - Cards com informações essenciais (data, horário, laboratório, disciplina)
+  - Integração total com API do backend
+
+✅ **Backend - Módulo de Aulas (RF02)**
+- Modelo Aula com relacionamentos para todas as entidades
+- Validação rigorosa de conflitos de horário:
+  - Conflito de laboratório: impede alocação dupla do mesmo lab no mesmo horário
+  - Conflito de professor: impede que professor dê aula em dois locais simultaneamente
+- CRUD completo para aulas (/api/v1/aulas)
+- Filtros específicos por data, laboratório e professor
+- Documentação Swagger completa
+- Índices otimizados para consultas de conflito
+- Mensagens de erro claras em português
+
+✅ **Frontend - Módulo de Aulas (RF02)**
+- Interface completa para agendamento de aulas
+- Formulário com validação de todos os campos obrigatórios
+- Carregamento automático de listas auxiliares (cursos, professores, etc.)
+- Tratamento específico para conflitos de horário (erro 409)
+- Grid com formatação adequada e filtros em tempo real
+- Integração total com API do backend
 
 ✅ **Documentação**
 - README.md atualizado

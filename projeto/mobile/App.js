@@ -12,6 +12,7 @@ import ProfessoresScreen from './src/components/Professores/ProfessoresScreen';
 import LaboratoriosScreen from './src/components/Laboratorios/LaboratoriosScreen';
 import DisciplinasScreen from './src/components/Disciplinas/DisciplinasScreen';
 import BlocosScreen from './src/components/Blocos/BlocosScreen';
+import AulasScreen from './src/components/Aulas/AulasScreen';
 
 const Stack = createStackNavigator();
 
@@ -85,6 +86,11 @@ export default function App() {
             name="Blocos" 
             component={BlocosScreen}
             options={{ title: 'Blocos de Horário' }}
+          />
+          <Stack.Screen 
+            name="Aulas" 
+            component={AulasScreen}
+            options={{ title: 'Agendamento de Aulas' }}
           />
         </Stack.Navigator>
         <StatusBar style="light" />

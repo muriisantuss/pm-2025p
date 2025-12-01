@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Platform } from 'react-native';
 import {
   FAB,
   Searchbar,
@@ -140,27 +140,35 @@ const InstituicoesScreen = () => {
   };
 
   const removerInstituicao = (id) => {
-    Alert.alert(
-      'Confirmar Remoção',
-      'Tem certeza que deseja remover esta instituição?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await instituicoesService.remover(id);
-              mostrarSnackbar('Instituição removida com sucesso');
-              await carregarInstituicoes(); // Aguardar recarregamento
-            } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover instituição';
-              mostrarSnackbar(message);
-            }
+    const confirmarRemocao = async () => {
+      try {
+        await instituicoesService.remover(id);
+        mostrarSnackbar('Instituição removida com sucesso');
+        await carregarInstituicoes();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Erro ao remover instituição';
+        mostrarSnackbar(message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover esta instituição?')) {
+        confirmarRemocao();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar Remoção',
+        'Tem certeza que deseja remover esta instituição?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: confirmarRemocao,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const instituicoesFiltradas = instituicoes.filter((instituicao) =>
@@ -241,6 +249,7 @@ const InstituicoesScreen = () => {
           bottom: 0,
         }}
         onPress={() => abrirDialog()}
+        animated={Platform.OS !== 'web'}
       />
 
       <Portal>

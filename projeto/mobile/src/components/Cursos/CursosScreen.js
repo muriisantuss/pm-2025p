@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Platform } from 'react-native';
 import {
   FAB,
   Searchbar,
@@ -140,27 +140,35 @@ const CursosScreen = () => {
   };
 
   const removerCurso = (id) => {
-    Alert.alert(
-      'Confirmar Remoção',
-      'Tem certeza que deseja remover este curso?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await cursosService.remover(id);
-              mostrarSnackbar('Curso removido com sucesso');
-              await carregarDados(); // Aguardar recarregamento
-            } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover curso';
-              mostrarSnackbar(message);
-            }
+    const confirmarRemocao = async () => {
+      try {
+        await cursosService.remover(id);
+        mostrarSnackbar('Curso removido com sucesso');
+        await carregarDados();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Erro ao remover curso';
+        mostrarSnackbar(message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover este curso?')) {
+        confirmarRemocao();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar Remoção',
+        'Tem certeza que deseja remover este curso?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: confirmarRemocao,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const cursosFiltrados = cursos.filter((curso) =>
@@ -240,6 +248,7 @@ const CursosScreen = () => {
           bottom: 0,
         }}
         onPress={() => abrirDialog()}
+        animated={Platform.OS !== 'web'}
       />
 
       <Portal>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView, Alert, Platform } from 'react-native';
 import {
   FAB,
   Searchbar,
@@ -141,27 +141,35 @@ const DisciplinasScreen = () => {
   };
 
   const removerDisciplina = (id) => {
-    Alert.alert(
-      'Confirmar Remoção',
-      'Tem certeza que deseja remover esta disciplina?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        {
-          text: 'Remover',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await disciplinasService.remover(id);
-              mostrarSnackbar('Disciplina removida com sucesso');
-              await carregarDados(); // Aguardar recarregamento
-            } catch (error) {
-              const message = error.response?.data?.message || 'Erro ao remover disciplina';
-              mostrarSnackbar(message);
-            }
+    const confirmarRemocao = async () => {
+      try {
+        await disciplinasService.remover(id);
+        mostrarSnackbar('Disciplina removida com sucesso');
+        await carregarDados();
+      } catch (error) {
+        const message = error.response?.data?.message || 'Erro ao remover disciplina';
+        mostrarSnackbar(message);
+      }
+    };
+
+    if (Platform.OS === 'web') {
+      if (window.confirm('Tem certeza que deseja remover esta disciplina?')) {
+        confirmarRemocao();
+      }
+    } else {
+      Alert.alert(
+        'Confirmar Remoção',
+        'Tem certeza que deseja remover esta disciplina?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          {
+            text: 'Remover',
+            style: 'destructive',
+            onPress: confirmarRemocao,
           },
-        },
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const disciplinasFiltradas = disciplinas.filter((disciplina) =>
@@ -232,6 +240,7 @@ const DisciplinasScreen = () => {
           bottom: 0,
         }}
         onPress={() => abrirDialog()}
+        animated={Platform.OS !== 'web'}
       />
 
       <Portal>

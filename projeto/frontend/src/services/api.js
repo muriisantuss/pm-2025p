@@ -98,4 +98,14 @@ export const blocosService = {
   remover: (id) => api.delete(`/blocos/${id}`),
 };
 
+/**
+ * Serviços para operações com aulas
+ */
+export const aulasService = {
+  listar: (params = {}) => api.get('/aulas', { params }),
+  criar: (data) => api.post('/aulas', data),
+  atualizar: (id, data) => api.put(`/aulas/${id}`, data),
+  remover: (id) => api.delete(`/aulas/${id}`),
+};
+
 export default api;

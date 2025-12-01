@@ -21,6 +21,7 @@ import {
   Computer as ComputerIcon,
   MenuBook as MenuBookIcon,
   Schedule as ScheduleIcon,
+  Event as EventIcon,
 } from '@mui/icons-material';
 import Instituicoes from '../Instituicoes/Instituicoes';
 import Cursos from '../Cursos/Cursos';
@@ -28,6 +29,7 @@ import Professores from '../Professores/Professores';
 import Laboratorios from '../Laboratorios/Laboratorios';
 import Disciplinas from '../Disciplinas/Disciplinas';
 import Blocos from '../Blocos/Blocos';
+import Aulas from '../Aulas/Aulas';
 
 const Menu = ({ open, onClose }) => {
   const [modalOpen, setModalOpen] = useState(false);
@@ -69,6 +71,10 @@ const Menu = ({ open, onClose }) => {
 
   const handleBlocosClick = () => {
     handleOpenModal('Gerenciar Blocos de Horário', <Blocos />);
+  };
+
+  const handleAulasClick = () => {
+    handleOpenModal('Agendamento de Aulas', <Aulas />);
   };
 
   return (
@@ -128,6 +134,14 @@ const Menu = ({ open, onClose }) => {
                   <ScheduleIcon />
                 </ListItemIcon>
                 <ListItemText primary="Blocos de Horário" />
+              </ListItemButton>
+            </ListItem>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handleAulasClick}>
+                <ListItemIcon>
+                  <EventIcon />
+                </ListItemIcon>
+                <ListItemText primary="Agendamento de Aulas" />
               </ListItemButton>
             </ListItem>
           </List>

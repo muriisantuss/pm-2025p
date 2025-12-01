@@ -5,12 +5,13 @@ import axios from 'axios';
  * @module API
  */
 
-const API_BASE_URL = 'http://localhost:3000/api/v1';
+const API_BASE_URL = 'https://better-ravens-drive.loca.lt/api/v1';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
+    'Bypass-Tunnel-Reminder': 'true',
   },
 });
 
@@ -72,6 +73,16 @@ export const blocosService = {
   criar: (data) => api.post('/blocos', data),
   atualizar: (id, data) => api.put(`/blocos/${id}`, data),
   remover: (id) => api.delete(`/blocos/${id}`),
+};
+
+/**
+ * Serviços para operações com aulas
+ */
+export const aulasService = {
+  listar: (params = {}) => api.get('/aulas', { params }),
+  criar: (data) => api.post('/aulas', data),
+  atualizar: (id, data) => api.put(`/aulas/${id}`, data),
+  remover: (id) => api.delete(`/aulas/${id}`),
 };
 
 export default api;
